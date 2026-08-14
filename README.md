@@ -42,10 +42,12 @@ This repository does not own:
 |       |-- restart-services.yml
 |       |-- verify-deployment.yml
 |       `-- deployment-summary.yml
+|-- installation/
+|   `-- install-local-argo.sh       Idempotent Docker Desktop installer
 `-- README.md
 ```
 
-The current `deployer/`, `reconciler/`, and image-building workflow are prototype scaffolding from the initial spike. They are not part of the intended ownership model and must not become production deployment-job implementations in this repository. The target design replaces them with an externally managed GitOps trigger and externally published, digest-pinned job images.
+The `deployer/` and `reconciler/` images are foundational prototype utilities: one securely obtains and verifies the package, and the other turns Git desired state into Argo workflow submissions. They remain here until production-grade platform components replace them. They are not implementations of config, topics, Glue, Liquibase, restart, or verification operations; those jobs remain independently owned.
 
 ## Desired-state manifests
 
@@ -154,7 +156,26 @@ Changing a job implementation should normally require changing only the relevant
 - A product/environment mutex prevents overlapping deployments of the same product.
 - Checksums are verified before deployment operations begin.
 
-## Installing the orchestration resources
+## Installing the local prototype
+
+Requirements are Docker Desktop Kubernetes, Argo Workflows in the `argo` namespace, AWS CLI v2, `kubectl`, and AWS credentials that can read the artifact prefix. The deployment repository is public in this prototype, so the reconciler does not require a Git token.
+
+Check the active identities first:
+
+```bash
+kubectl config current-context
+aws sts get-caller-identity
+```
+
+Install or update everything idempotently:
+
+```bash
+bash ./installation/install-local-argo.sh
+```
+
+The installer asks before changing the active cluster, exports the current AWS CLI session into the `data-product-s3-reader` Kubernetes Secret, and applies all templates, RBAC, service accounts, and the reconciliation CronWorkflow. Credentials are neither printed nor written to the repository. If the AWS session is temporary, rerun the installer after refreshing it. Options include `--profile <name>`, `--region <region>`, `--yes`, and `--skip-aws-secret`.
+
+## Installing the orchestration resources manually
 
 The checked-in resources can be parsed without changing the cluster:
 

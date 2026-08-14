@@ -13,6 +13,9 @@ rules:
   - apiGroups: [argoproj.io]
     resources: [workflows]
     verbs: [get, list, create]
+  - apiGroups: [argoproj.io]
+    resources: [workflowtaskresults]
+    verbs: [create, patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -33,8 +36,6 @@ kind: ServiceAccount
 metadata:
   name: data-product-deployer
   namespace: argo
-  annotations:
-    eks.amazonaws.com/role-arn: REPLACE_WITH_DEPLOYER_ROLE_ARN
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
@@ -42,7 +43,8 @@ metadata:
   name: reconcile-data-product-manifests
   namespace: argo
 spec:
-  schedule: "* * * * *"
+  schedules:
+    - "* * * * *"
   concurrencyPolicy: Forbid
   workflowSpec:
     serviceAccountName: data-product-reconciler

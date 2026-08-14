@@ -7,8 +7,8 @@ spec:
   entrypoint: deploy
   serviceAccountName: data-product-deployer
   synchronization:
-    mutex:
-      name: "deploy-{{workflow.parameters.environment}}-{{workflow.parameters.product}}"
+    mutexes:
+      - name: "deploy-{{workflow.parameters.environment}}-{{workflow.parameters.product}}"
   arguments:
     parameters:
       - name: environment
@@ -81,6 +81,9 @@ spec:
             path: /workspace/product/data-product.yaml
       container:
         image: ghcr.io/t-sterling/data-product-deployer:0.1.0
+        envFrom:
+          - secretRef:
+              name: data-product-s3-reader
         env:
           - {name: ARTIFACT_URI, value: "{{workflow.parameters.artifact-uri}}"}
           - {name: ARTIFACT_SHA256, value: "{{workflow.parameters.artifact-sha256}}"}
