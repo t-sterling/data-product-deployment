@@ -80,7 +80,7 @@ spec:
           - name: product-manifest
             path: /workspace/product/data-product.yaml
       container:
-        image: ghcr.io/REPLACE_WITH_ORG/data-product-deployer:0.1.0
+        image: ghcr.io/t-sterling/data-product-deployer:0.1.0
         env:
           - {name: ARTIFACT_URI, value: "{{workflow.parameters.artifact-uri}}"}
           - {name: ARTIFACT_SHA256, value: "{{workflow.parameters.artifact-sha256}}"}
