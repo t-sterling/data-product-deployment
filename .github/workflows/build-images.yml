@@ -1,0 +1,27 @@
+name: Build deployment images
+on:
+  push:
+    branches: [main]
+    paths: ['reconciler/**', 'deployer/**', '.github/workflows/build-images.yml']
+permissions:
+  contents: read
+  packages: write
+jobs:
+  images:
+    strategy:
+      matrix:
+        component: [reconciler, deployer]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.component }}/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/data-product-${{ matrix.component }}:0.1.0

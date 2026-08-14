@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata: {name: reconcile-topics, namespace: argo}
+spec:
+  templates:
+    - name: run
+      inputs: &inputs
+        parameters: [{name: environment}]
+        artifacts: [{name: product-manifest, path: /product/data-product.yaml}]
+      retryStrategy: &retry
+        limit: "3"
+        retryPolicy: OnError
+        backoff: {duration: 2s, factor: 2, maxDuration: 30s}
+      container:
+        image: alpine:3.20
+        command: [sh, -ceu]
+        args: ["echo environment={{inputs.parameters.environment}} operation=reconcile-topics attempt=${ARGO_RETRY:-0} action=SKELETON result=SUCCESS"]

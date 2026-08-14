@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: data-product-reconciler
+  namespace: argo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: data-product-reconciler
+  namespace: argo
+rules:
+  - apiGroups: [argoproj.io]
+    resources: [workflows]
+    verbs: [get, list, create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: data-product-reconciler
+  namespace: argo
+subjects:
+  - kind: ServiceAccount
+    name: data-product-reconciler
+    namespace: argo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: data-product-reconciler
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: data-product-deployer
+  namespace: argo
+  annotations:
+    eks.amazonaws.com/role-arn: REPLACE_WITH_DEPLOYER_ROLE_ARN
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: reconcile-data-product-manifests
+  namespace: argo
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  workflowSpec:
+    serviceAccountName: data-product-reconciler
+    entrypoint: reconcile
+    templates:
+      - name: reconcile
+        container:
+          image: ghcr.io/REPLACE_WITH_ORG/data-product-reconciler:0.1.0
+          env:
+            - {name: ENVIRONMENT, value: dev}
+            - {name: ARGO_NAMESPACE, value: argo}
+            - {name: DEPLOYMENT_REPOSITORY_URL, value: "https://github.com/REPLACE_WITH_ORG/data-product-deployment.git"}
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: deployment-repository-credentials
+                  key: token
+                  optional: true

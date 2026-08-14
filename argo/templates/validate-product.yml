@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata: {name: validate-product, namespace: argo}
+spec:
+  templates:
+    - name: run
+      inputs:
+        parameters: [{name: environment}]
+        artifacts: [{name: product-manifest, path: /product/data-product.yaml}]
+      container:
+        image: alpine:3.20
+        command: [sh, -ceu]
+        args:
+          - |
+            manifest=/product/data-product.yaml
+            test -s "$manifest"
+            grep -q '^kind: DataProduct$' "$manifest"
+            grep -q '^  name:' "$manifest"
+            grep -q '^  version:' "$manifest"
+            printf 'environment=%s operation=validate-product action=VALIDATE result=SUCCESS\n' '{{inputs.parameters.environment}}'

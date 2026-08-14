@@ -1,0 +1,89 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: deploy-data-product
+  namespace: argo
+spec:
+  entrypoint: deploy
+  serviceAccountName: data-product-deployer
+  synchronization:
+    mutex:
+      name: "deploy-{{workflow.parameters.environment}}-{{workflow.parameters.product}}"
+  arguments:
+    parameters:
+      - name: environment
+      - name: product
+      - name: version
+      - name: release-status
+      - name: artifact-uri
+      - name: artifact-sha256
+      - name: source-commit
+      - name: content-sha256
+  volumeClaimTemplates:
+    - metadata:
+        name: workspace
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+  templates:
+    - name: deploy
+      dag:
+        tasks:
+          - name: download
+            template: download
+          - name: validate
+            dependencies: [download]
+            templateRef: {name: validate-product, template: run}
+            arguments: &operation-arguments
+              parameters:
+                - {name: environment, value: "{{workflow.parameters.environment}}"}
+              artifacts:
+                - {name: product-manifest, from: "{{tasks.download.outputs.artifacts.product-manifest}}"}
+          - name: config
+            dependencies: [validate]
+            templateRef: {name: reconcile-config, template: run}
+            arguments: *operation-arguments
+          - name: topics
+            dependencies: [config]
+            templateRef: {name: reconcile-topics, template: run}
+            arguments: *operation-arguments
+          - name: glue
+            dependencies: [topics]
+            templateRef: {name: reconcile-glue, template: run}
+            arguments: *operation-arguments
+          - name: liquibase
+            dependencies: [glue]
+            templateRef: {name: run-liquibase, template: run}
+            arguments: *operation-arguments
+          - name: restart
+            dependencies: [liquibase]
+            templateRef: {name: restart-services, template: run}
+            arguments: *operation-arguments
+          - name: verify
+            dependencies: [restart]
+            templateRef: {name: verify-deployment, template: run}
+            arguments: *operation-arguments
+          - name: summary
+            dependencies: [verify]
+            templateRef: {name: deployment-summary, template: run}
+            arguments:
+              parameters:
+                - {name: product-name, value: "{{workflow.parameters.product}}"}
+                - {name: product-version, value: "{{workflow.parameters.version}}"}
+                - {name: environment, value: "{{workflow.parameters.environment}}"}
+                - {name: status, value: SUCCESS}
+    - name: download
+      outputs:
+        artifacts:
+          - name: product-manifest
+            path: /workspace/product/data-product.yaml
+      container:
+        image: ghcr.io/REPLACE_WITH_ORG/data-product-deployer:0.1.0
+        env:
+          - {name: ARTIFACT_URI, value: "{{workflow.parameters.artifact-uri}}"}
+          - {name: ARTIFACT_SHA256, value: "{{workflow.parameters.artifact-sha256}}"}
+          - {name: AWS_REGION, value: us-east-1}
+        volumeMounts:
+          - {name: workspace, mountPath: /workspace}

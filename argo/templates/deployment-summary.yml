@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata: {name: deployment-summary, namespace: argo}
+spec:
+  templates:
+    - name: run
+      inputs:
+        parameters:
+          - {name: product-name}
+          - {name: product-version}
+          - {name: environment}
+          - {name: status}
+      container:
+        image: alpine:3.20
+        command: [sh, -ceu]
+        args: ["echo product={{inputs.parameters.product-name}} version={{inputs.parameters.product-version}} environment={{inputs.parameters.environment}} status={{inputs.parameters.status}}"]

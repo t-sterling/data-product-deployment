@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata: {name: reconcile-config, namespace: argo}
+spec:
+  templates:
+    - name: run
+      inputs:
+        parameters: [{name: environment}]
+        artifacts: [{name: product-manifest, path: /product/data-product.yaml}]
+      retryStrategy: &retry
+        limit: "3"
+        retryPolicy: OnError
+        backoff: {duration: 2s, factor: 2, maxDuration: 30s}
+      container:
+        image: alpine:3.20
+        command: [sh, -ceu]
+        args:
+          - |
+            manifest=/product/data-product.yaml
+            product="$(awk '/^metadata:/{m=1;next} m&&/^  name:/{print $2;exit}' "$manifest")"
+            version="$(awk '/^metadata:/{m=1;next} m&&/^  version:/{gsub(/"/,"",$2);print $2;exit}' "$manifest")"
+            printf 'product=%s version=%s environment=%s operation=reconcile-config attempt=%s action=SKELETON result=SUCCESS\n' "$product" "$version" '{{inputs.parameters.environment}}' "${ARGO_RETRY:-0}"
