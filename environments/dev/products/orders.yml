@@ -1,0 +1,17 @@
+apiVersion: platform.example.io/v1alpha1
+kind: DataProductDeployment
+metadata:
+  name: orders
+spec:
+  environment: dev
+  product: orders
+  version: 2.0.2
+  releaseStatus: candidate
+  source:
+    repository: t-sterling/data-product
+    branch: feature/orders-new-field
+    commit: 3713690514d74005bbc1965dbb17dc3d2667936e
+    contentSha256: 63805fc4d6e92932b4ae87c0c93703580afe824788e165a09b97799cddc6631a
+  artifact:
+    uri: s3://ts-data-products/data-products/candidates/orders/2.0.2/3713690514d74005bbc1965dbb17dc3d2667936e/orders-2.0.2.zip
+    sha256: a0069e06557c0165b3453c4cfd25f5e0c4dac2ff33d6ba36c135616556220da9
