@@ -10,8 +10,8 @@ spec:
   source:
     repository: t-sterling/data-product
     branch: feature/orders-new-field
-    commit: 3713690514d74005bbc1965dbb17dc3d2667936e
-    contentSha256: 63805fc4d6e92932b4ae87c0c93703580afe824788e165a09b97799cddc6631a
+    commit: a8f9f9bb77ce2d873097cc11b24e0540e4c94f30
+    contentSha256: 656ed4d92479a2a093a5d6c33f70d12cf56e77b825c7d837cb6f9e51b992f350
   artifact:
-    uri: s3://ts-data-products/data-products/candidates/orders/2.0.2/3713690514d74005bbc1965dbb17dc3d2667936e/orders-2.0.2.zip
-    sha256: a0069e06557c0165b3453c4cfd25f5e0c4dac2ff33d6ba36c135616556220da9
+    uri: s3://ts-data-products/data-products/candidates/orders/2.0.2/a8f9f9bb77ce2d873097cc11b24e0540e4c94f30/orders-2.0.2.zip
+    sha256: 24361d40992b724ff258089c98288cbb6df25407da95bbb8b05b6d797df6052a
