@@ -6,12 +6,12 @@ spec:
   environment: dev
   product: orders
   version: 2.0.2
-  releaseStatus: candidate
+  releaseStatus: release
   source:
     repository: t-sterling/data-product
-    branch: feature/orders-new-field
-    commit: a8f9f9bb77ce2d873097cc11b24e0540e4c94f30
+    branch: main
+    commit: 7aa2332f594b90e978774bc4e07a0373f8286ba8
     contentSha256: 656ed4d92479a2a093a5d6c33f70d12cf56e77b825c7d837cb6f9e51b992f350
   artifact:
-    uri: s3://ts-data-products/data-products/candidates/orders/2.0.2/a8f9f9bb77ce2d873097cc11b24e0540e4c94f30/orders-2.0.2.zip
+    uri: s3://ts-data-products/data-products/releases/orders/2.0.2/orders-2.0.2.zip
     sha256: 24361d40992b724ff258089c98288cbb6df25407da95bbb8b05b6d797df6052a
